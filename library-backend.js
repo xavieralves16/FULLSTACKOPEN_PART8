@@ -117,7 +117,18 @@ const typeDefs = `
     allBooks(author: String, genre: String): [Book!]!
     allAuthors: [Author!]!
   }
+
+  type Mutation {
+    addBook(
+      title: String!
+      author: String!
+      published: Int!
+      genres: [String!]!
+    ): Book!
+  }
 `
+
+const { v4: uuid } = require('uuid')
 
 const resolvers = {
   Query: {
@@ -148,6 +159,25 @@ const resolvers = {
   Author: {
     bookCount: (root) =>
       books.filter(book => book.author === root.name).length
+  },
+
+  Mutation: {
+    addBook: (root, args) => {
+      // If the author doesn't exist, add them
+      if (!authors.some(a => a.name === args.author)) {
+        authors.push({
+          name: args.author,
+          id: uuid(),
+          born: null
+        })
+      }
+
+      // Create the new book
+      const newBook = { ...args, id: uuid() }
+      books.push(newBook)
+
+      return newBook
+    }
   }
 }
 
