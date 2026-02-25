@@ -1,30 +1,13 @@
 require('dotenv').config()
-const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
 const mongoose = require('mongoose')
-
-const typeDefs = require('./schema')
-const resolvers = require('./resolvers')
-
-mongoose.set('strictQuery', false)
+const startServer = require('./server')
 
 const MONGODB_URI = process.env.MONGODB_URI
+const PORT = process.env.PORT || 4000
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('connected to MongoDB')
+    console.log('Connected to MongoDB')
+    startServer(PORT)
   })
-  .catch((error) => {
-    console.log('error connecting to MongoDB:', error.message)
-  })
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
+  .catch(err => console.error('DB connection error', err.message))
