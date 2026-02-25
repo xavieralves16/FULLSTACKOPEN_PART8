@@ -7,8 +7,24 @@ const resolvers = {
 
     authorCount: async () => Author.collection.countDocuments(),
 
-    allBooks: async () => {
-      return Book.find({}).populate('author')
+    allBooks: async (root, args) => {
+
+    let filter = {}
+
+    if (args.author) {
+        const author = await Author.findOne({ name: args.author })
+        if (!author) return []
+        filter.author = author._id
+    }
+
+    if (args.genre) {
+        filter.genres = { $in: [args.genre] }
+    }
+
+
+    const books = await Book.find(filter).populate('author')
+
+    return books
     },
 
     allAuthors: async () => {
