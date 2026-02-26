@@ -13,6 +13,8 @@ import { useServer } from 'graphql-ws/lib/use/ws'
 import typeDefs from './schema.js'
 import resolvers from './resolvers.js'
 
+import createBookCountLoader from './loaders/bookCountLoader.js';
+
 const startServer = async () => {
   const app = express()
   const httpServer = http.createServer(app)
@@ -35,6 +37,9 @@ const startServer = async () => {
 
   const server = new ApolloServer({
     schema,
+    context: () => ({
+      bookCountLoader: createBookCountLoader(),
+    }),
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       {
