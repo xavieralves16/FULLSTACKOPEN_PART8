@@ -3,10 +3,25 @@ import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 import Login from './components/Login'
+import FavoriteBooks from './components/FavoriteBooks'
+import { gql } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
+
+export const ME = gql`
+  query {
+    me {
+      username
+      favoriteGenre
+    }
+  }
+`
+
+
 
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
+  const { data: meData } = useQuery(ME)
 
   useEffect(() => {
     const token = localStorage.getItem('library-user-token')
@@ -35,10 +50,14 @@ const App = () => {
         ) : (
           <button onClick={logout}>logout</button>
         )}
+        {token && (
+          <button onClick={() => setPage('favorite')}>favorite genre</button>
+        )}
       </div>
 
       <Authors show={page === 'authors'} />
       <Books show={page === 'books'} />
+      <FavoriteBooks show={page === 'favorite'} favoriteGenre={meData?.me?.favoriteGenre} />
       <NewBook show={page === 'add' && token} />
       <Login show={page === 'login'} setToken={setToken} />
     </div>
