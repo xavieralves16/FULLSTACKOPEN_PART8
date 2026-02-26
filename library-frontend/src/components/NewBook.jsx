@@ -4,7 +4,7 @@ import { useMutation } from '@apollo/client/react'
 import Books, { ALL_BOOKS } from './Books'
 import Authors, { ALL_AUTHORS } from './Authors'
 
-// Mutation GraphQL
+
 const ADD_BOOK = gql`
   mutation addBook(
     $title: String!
@@ -19,8 +19,10 @@ const ADD_BOOK = gql`
       genres: $genres
     ) {
       title
-      author
       published
+      author {
+        name
+      }
     }
   }
 `
