@@ -3,8 +3,8 @@ import { useQuery } from '@apollo/client/react'
 import { useState } from 'react'  
 
 export const ALL_BOOKS = gql`
-  query {
-    allBooks {
+  query allBooks($genre: String) {
+    allBooks(genre: $genre) {
       title
       published
       genres
@@ -16,21 +16,24 @@ export const ALL_BOOKS = gql`
 `
 
 const Books = (props) => {
-  const result = useQuery(ALL_BOOKS)
+
   const [filterGenre, setFilterGenre] = useState('all')
+
+  const { loading, error, data, refetch } = useQuery(ALL_BOOKS, {
+    variables: filterGenre === 'all' ? {} : { genre: filterGenre },
+  })
 
   if (!props.show) {
     return null
   }
 
-  if (result.loading) {
+  if (loading) {
     return <div>loading...</div>
   }
 
-  const books = result.data.allBooks
-  const filteredBooks = filterGenre === 'all' 
-    ? books 
-    : books.filter(b => b.genres.includes(filterGenre))
+  if (error) return <div>Error: {error.message}</div>
+
+  const books = data?.allBooks || []
 
   const genres = [...new Set(books.flatMap(b => b.genres))]
 
@@ -46,7 +49,7 @@ const Books = (props) => {
           </tr>
         </thead>
         <tbody>
-          {filteredBooks.map((b) => (
+          {books.map((b) => (  
             <tr key={b.title + b.author.name}>
               <td>{b.title}</td>
               <td>{b.author.name}</td>
@@ -56,9 +59,26 @@ const Books = (props) => {
         </tbody>
       </table>
       <div>
-        <button onClick={() => setFilterGenre('all')}>all genres</button>
-        {genres.map(g => (
-          <button key={g} onClick={() => setFilterGenre(g)} style={{ fontWeight: filterGenre === g ? 'bold' : 'normal' }}>{g}</button>
+        <button
+          onClick={() => {
+            setFilterGenre('all')
+            refetch({ genre: null })  
+          }}
+          style={{ fontWeight: filterGenre === 'all' ? 'bold' : 'normal' }}
+        >
+          all genres
+        </button>
+        {genres.map((g) => (
+          <button
+            key={g}
+            onClick={() => {
+              setFilterGenre(g)
+              refetch({ genre: g })  
+            }}
+            style={{ fontWeight: filterGenre === g ? 'bold' : 'normal' }}
+          >
+            {g}
+          </button>
         ))}
       </div>
     </div>
